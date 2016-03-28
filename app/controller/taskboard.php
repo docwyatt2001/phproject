@@ -242,11 +242,11 @@ class Taskboard extends \Controller {
 			return;
 		}
 
-		$visible_tasks = explode(",", $params["tasks"]);
+		$visible_tasks = preg_replace("/[^0-9,]/", "", $f3->get("VERB") == "POST" ? $f3->get("POST.tasks") : $params["tasks"]);
 
 		// Visible tasks must have at least one key
 		if (empty($visible_tasks)) {
-			$visible_tasks = array(0);
+			$visible_tasks = "0";
 		}
 
 		// Get today's date
@@ -268,12 +268,11 @@ class Taskboard extends \Controller {
 		$burnDatesCount = count($burnDates);
 
 		$db = $f3->get("db.instance");
-		$visible_tasks_str = implode(",", $visible_tasks);
 		$query_initial =
 				"SELECT SUM(IFNULL(i.hours_total, i.hours_remaining)) AS remaining
 				FROM issue i
 				WHERE i.created_date < :date
-				AND i.id IN (" . implode(",", $visible_tasks) . ")";
+				AND i.id IN ($visible_tasks)";
 		$query_daily =
 				"SELECT SUM(IF(f.id IS NULL, IFNULL(i.hours_total, i.hours_remaining), f.new_value)) AS remaining
 				FROM issue_update_field f
@@ -284,13 +283,13 @@ class Taskboard extends \Controller {
 					JOIN issue_update_field f ON f.issue_update_id = u.id
 					WHERE f.field = 'hours_remaining'
 					AND u.created_date < :date
-					AND u.issue_id IN ($visible_tasks_str)
+					AND u.issue_id IN ($visible_tasks)
 					GROUP BY u.issue_id
 				) a ON a.max_id = u.id
 				RIGHT JOIN issue i ON i.id = u.issue_id
 				WHERE (f.field = 'hours_remaining' OR f.field IS NULL)
 				AND i.created_date < :date
-				AND i.id IN ($visible_tasks_str)";
+				AND i.id IN ($visible_tasks)";
 
 		$i = 1;
 		foreach($burnDates as $date) {

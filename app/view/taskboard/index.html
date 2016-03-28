@@ -322,20 +322,18 @@
 				hours_remaining: '{{ @dict.hours_remaining }}',
 				target_velocity: '{{ @dict.ideal_hours_remaining }}',
 				actual_velocity: '{{ @dict.daily_hours_remaining }}',
+				added_hours: 'Added Hours',
 			};
 
 		$(document).ready(function() {
 
 			// Preload burndown data
-			$.ajax({
-				url: BASE + '/taskboard/{{ @sprint.id }}/burndown/{{ @tasks }}',
-				success: function(data) {
-					BurndownData = data;
-					BurndownReady = true;
-				},
-				dataType: 'json',
-				cache: false
-			});
+			$.post(BASE + '/taskboard/{{ @sprint.id }}/burndown', {
+				tasks: '{{ @tasks }}'
+			}, function(data) {
+				BurndownData = data;
+				BurndownReady = true;
+			}, 'json');
 
 			// Initialize burndown when requested
 			$("#btn-burndown").click(function(e) {

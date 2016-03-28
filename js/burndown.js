@@ -33,6 +33,15 @@ var Burndown = {
 		pointHighlightStroke: '#3498db',
 		data: []
 	},
+	addedHours: {
+		fillColor: 'rgba(231,76,60,0.1)',
+		strokeColor: '#E74C3C',
+		pointColor: '#E74C3C',
+		pointStrokeColor: '#E74C3C',
+		pointHighlightFill: '#fff',
+		pointHighlightStroke: '#E74C3C',
+		data: []
+	},
 	days: 0,
 	initialHours: 0,
 	canvasId: 'burndown',
@@ -45,12 +54,14 @@ var Burndown = {
 		Burndown.actualVelocity.label = BurndownLegendDict.hours_remaining;
 		Burndown.targetVelocity.label = BurndownLegendDict.target_velocity;
 		Burndown.hoursDay.label = BurndownLegendDict.actual_velocity;
+		Burndown.addedHours.label = BurndownLegendDict.added_hours;
 
 		// Populate datsets
 		Burndown.createData(data);
 		Burndown.data.datasets.push(Burndown.actualVelocity);
 		Burndown.data.datasets.push(Burndown.targetVelocity);
 		Burndown.data.datasets.push(Burndown.hoursDay);
+		Burndown.data.datasets.push(Burndown.addedHours);
 
 		// Generate chart
 		var ctx = document.getElementById(Burndown.canvasId).getContext('2d');
@@ -89,12 +100,15 @@ var Burndown = {
 			// Set actual velocity
 			if (val) { // Check if it's null for actual velocity
 				Burndown.actualVelocity.data.push(this.remaining);
-				Burndown.hoursDay.data.push(this.remaining / i);
+				Burndown.hoursDay.data.push(Math.round(this.remaining / i * 100) / 100);
 			}
 
 			// Set target data
-			Burndown.targetVelocity.data.push(target);
+			Burndown.targetVelocity.data.push(Math.round(target * 100) / 100);
 			target = target - ratio;
+
+			// Set added hours
+			Burndown.addedHours.data.push(Math.round(Math.random() * 1000) / 100);
 
 			i--;
 
