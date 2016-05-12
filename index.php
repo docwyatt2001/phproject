@@ -11,8 +11,9 @@ $f3->mset(array(
 	"LOCALES" => "app/dict/",
 	"FALLBACK" => "en",
 	"CACHE" => true,
-	"AUTOLOAD" => "app/",
+	"AUTOLOAD" => "app/;lib/vendor/",
 	"PACKAGE" => "Phproject",
+	"TZ" => "UTC",
 	"microtime" => microtime(true),
 	"site.url" => $f3->get("SCHEME") . "://" . $f3->get("HOST") . $f3->get("BASE") . "/"
 ));

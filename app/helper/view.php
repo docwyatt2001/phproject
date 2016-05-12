@@ -21,6 +21,9 @@ class View extends \Template {
 	 * @return string
 	 */
 	public function parseText($str, $options = array(), $ttl = null) {
+		if($options === null) {
+			$options = array();
+		}
 		$options = $options + \Base::instance()->get("parse");
 
 		// Check for cached value if $ttl is set
@@ -80,8 +83,38 @@ class View extends \Template {
 	 * @return string
 	 */
 	protected function _parseIds($str) {
-		$url = \Base::instance()->get("site.url");
-		return preg_replace("/(?<=[^a-z\\/&]|^)#([0-9]+)(?=[^a-z\\/]|$)/i", "<a href=\"{$url}issues/$1\">#$1</a>", $str);
+		$base = \Base::instance()->get("BASE");
+
+		// Find all IDs
+		$count = preg_match_all("/(?<=[^a-z\\/&]#|^#)[0-9]+(?=[^a-z\\/]|$)/i", $str, $matches);
+		if(!$count) {
+			return $str;
+		}
+
+		// Load IDs
+		$ids = array();
+		foreach($matches[0] as $match) {
+			$ids[] = $match;
+		}
+		$idsStr = implode(",", array_unique($ids));
+		$issue = new \Model\Issue;
+		$issues = $issue->find(array("id IN ($idsStr)"));
+
+		return preg_replace_callback("/(?<=[^a-z\\/&]|^)#[0-9]+(?=[^a-z\\/]|$)/i", function($matches) use($base, $issues) {
+			$id = ltrim($matches[0], "#");
+			foreach($issues as $i) {
+				if($i->id == $id) {
+					$issue = $i;
+				}
+			}
+			if($issue) {
+				if($issue->deleted_date) {
+					return "<a href=\"{$base}/issues/$id\" style=\"text-decoration: line-through;\">#$id &ndash; " . htmlspecialchars($issue->name) . "</a>";
+				}
+				return "<a href=\"{$base}/issues/$id\">#$id &ndash; " . htmlspecialchars($issue->name) . "</a>";
+			}
+			return "<a href=\"{$base}/issues/$id\">#$id</a>";
+		}, $str);
 	}
 
 	/**
@@ -220,7 +253,7 @@ class View extends \Template {
 	 * @return string
 	 */
 	protected function _parseTextile($str) {
-		$tex = new Textile\Parser('html5');
+		$tex = new \Textile\Parser('html5');
 		$tex->setDimensionlessImages(true);
 		return $tex->parse($str);
 	}
@@ -231,7 +264,7 @@ class View extends \Template {
 	 * @return string
 	 */
 	protected function _parseMarkdown($str) {
-		$mkd = new Parsedown();
+		$mkd = new \Parsedown();
 		$mkd->setUrlsLinked(false);
 		return $mkd->text($str);
 	}
