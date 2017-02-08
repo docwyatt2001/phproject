@@ -121,7 +121,7 @@
 				</check>
 			</repeat>
 			<check if="{{ !empty(@old_sprints) }}">
-				<optgroup label="@dict.previous_sprints">
+				<optgroup label="{{ @dict.previous_sprints }}">
 					<repeat group="{{ @old_sprints }}" value="{{ @item }}">
 						<check if="{{ !empty(@GET.sprint_id) && @GET.sprint_id == @item.id }}">
 							<true><option value="{{ @item.id }}" selected>{{ date("M j, Y", strtotime(@item.start_date)) }}</option></true>
@@ -140,8 +140,8 @@
 					<true><option value="repeat" selected>{{ @dict.repeating }}</option></true>
 					<false><option value="repeat">{{ @dict.repeating }}</option></false>
 				</check>
-				<check if="{{ isset(@GET.repeat_cycle) && @GET.repeat_cycle == null }}">
-					<true><option value="none" selected>{{ @dict.not_repeating }}</option></true>
+				<check if="{{ empty(@GET.repeat_cycle) }}">
+					<true><option value="" selected>{{ @dict.not_repeating }}</option></true>
 					<false><option value="">{{ @dict.not_repeating }}</option></false>
 				</check>
 			</optgroup>
